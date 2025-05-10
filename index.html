@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interaktive Karten</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    #reset-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: transparent;
+      border: none;
+      font-size: 32px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      z-index: 20;
+    }
+
+    #reset-btn.holding {
+      animation: rotate 1s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    #intro-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: white;
+      color: black;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      font-size: 24px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="intro-screen">
+    <h1>Was bleibt, wenn man hinsieht?</h1>
+    <p>Ist es nicht genau das was ich meine, das was ich sehen möchte?</p>
+    <p>Die Fragenden, die verschiedenen Blicke einer jeder Person auf dasselbe?</p>
+  </div>
+
+  <h1>Interaktive Karten</h1>
+  <div id="canvas-container">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <button id="reset-btn" title="Reset">&#x21bb;</button>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
+<script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const intro = document.getElementById('intro-screen');
+        if (intro) {
+          intro.style.transition = 'opacity 1s ease';
+          intro.style.opacity = '0';
+          setTimeout(() => intro.remove(), 1000); // Entfernt das Element nach dem Ausblenden
+        }
+      }, 10000); // 10000 Millisekunden = 10 Sekunden
+    });
+  </script>
