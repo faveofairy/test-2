@@ -18,10 +18,8 @@ backgroundImage.src = 'images/background.jpg';
 
 function drawCards() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-
     ctx.setTransform(zoom, 0, 0, zoom, panX, panY);
 
     cards.forEach(card => {
@@ -30,6 +28,7 @@ function drawCards() {
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+
         let fontSize = 16;
         const maxWidth = 90;
         ctx.font = `${fontSize}px Arial`;
@@ -37,17 +36,16 @@ function drawCards() {
             fontSize -= 1;
             ctx.font = `${fontSize}px Arial`;
         }
+
         ctx.fillText(card.text, card.x + 50, card.y + 25);
     });
 }
 
-function getMouse(e) {
-    const rect = canvas.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    const x = (clientX - rect.left - panX) / zoom;
-    const y = (clientY - rect.top - panY) / zoom;
-    return { x, y };
+function getTransformedPos(x, y) {
+    return {
+        x: (x - panX) / zoom,
+        y: (y - panY) / zoom
+    };
 }
 
 function getCardAt(x, y) {
@@ -60,68 +58,108 @@ function getCardAt(x, y) {
     return null;
 }
 
-// MOUSE + TOUCH EVENTS
-function startDrag(e) {
-    e.preventDefault();
-    const { x, y } = getMouse(e);
+// --- Maussteuerung
+canvas.addEventListener('mousedown', (e) => {
+    const { x, y } = getTransformedPos(e.clientX, e.clientY);
     const clickedCard = getCardAt(x, y);
+
     if (clickedCard) {
         draggingCard = clickedCard;
         offsetX = x - clickedCard.x;
         offsetY = y - clickedCard.y;
     } else {
         draggingCanvas = true;
-        offsetX = (e.touches ? e.touches[0].clientX : e.clientX) - panX;
-        offsetY = (e.touches ? e.touches[0].clientY : e.clientY) - panY;
+        offsetX = e.clientX - panX;
+        offsetY = e.clientY - panY;
     }
-}
+});
 
-function moveDrag(e) {
-    if (draggingCard || draggingCanvas) e.preventDefault();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
+canvas.addEventListener('mousemove', (e) => {
     if (draggingCard) {
-        const { x, y } = getMouse(e);
+        const { x, y } = getTransformedPos(e.clientX, e.clientY);
         draggingCard.x = x - offsetX;
         draggingCard.y = y - offsetY;
         drawCards();
     } else if (draggingCanvas) {
-        panX = clientX - offsetX;
-        panY = clientY - offsetY;
+        panX = e.clientX - offsetX;
+        panY = e.clientY - offsetY;
         drawCards();
     }
-}
+});
 
-function endDrag() {
+canvas.addEventListener('mouseup', () => {
     draggingCard = null;
     draggingCanvas = false;
-}
+});
 
-canvas.addEventListener('mousedown', startDrag);
-canvas.addEventListener('mousemove', moveDrag);
-canvas.addEventListener('mouseup', endDrag);
-canvas.addEventListener('mouseleave', endDrag);
+// --- Touchsteuerung
+canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const clientX = touch.clientX - rect.left;
+        const clientY = touch.clientY - rect.top;
 
-canvas.addEventListener('touchstart', startDrag, { passive: false });
-canvas.addEventListener('touchmove', moveDrag, { passive: false });
-canvas.addEventListener('touchend', endDrag);
+        const { x, y } = getTransformedPos(clientX, clientY);
+        const clickedCard = getCardAt(x, y);
+
+        if (clickedCard) {
+            draggingCard = clickedCard;
+            offsetX = x - clickedCard.x;
+            offsetY = y - clickedCard.y;
+        } else {
+            draggingCanvas = true;
+            offsetX = clientX - panX;
+            offsetY = clientY - panY;
+        }
+    }
+});
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const clientX = touch.clientX - rect.left;
+        const clientY = touch.clientY - rect.top;
+
+        if (draggingCard) {
+            const { x, y } = getTransformedPos(clientX, clientY);
+            draggingCard.x = x - offsetX;
+            draggingCard.y = y - offsetY;
+            drawCards();
+        } else if (draggingCanvas) {
+            panX = clientX - offsetX;
+            panY = clientY - offsetY;
+            drawCards();
+        }
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchend', () => {
+    draggingCard = null;
+    draggingCanvas = false;
+});
 
 canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
-    const { x, y } = getMouse(e);
+    const { x, y } = getTransformedPos(e.clientX, e.clientY);
     const zoomFactor = 1.1;
     const direction = e.deltaY < 0 ? 1 : -1;
     const factor = direction > 0 ? zoomFactor : 1 / zoomFactor;
+
     const newZoom = zoom * factor;
     const dx = x * (newZoom - zoom);
     const dy = y * (newZoom - zoom);
+
     panX -= dx;
     panY -= dy;
     zoom = newZoom;
+
     drawCards();
 }, { passive: false });
 
+// Wörter laden
 fetch('woerter.json')
     .then(response => response.json())
     .then(data => {
@@ -137,21 +175,24 @@ fetch('woerter.json')
         const cardsPerStack = 28;
         const columns = 3;
         const rows = 3;
+
         const totalWidth = columns * cardWidth + (columns - 1) * spacingX;
         const totalHeight = rows * cardHeight + (rows - 1) * spacingY;
-        const offsetX = (canvas.width - totalWidth) / 2;
-        const offsetY = (canvas.height - totalHeight) / 2;
+
+        const startX = (canvas.width - totalWidth) / 2;
+        const startY = (canvas.height - totalHeight) / 2;
 
         setTimeout(() => {
             for (let col = 0; col < columns; col++) {
                 for (let row = 0; row < rows; row++) {
                     const stackStartIndex = (row * columns + col) * cardsPerStack;
                     const stackWords = data.slice(stackStartIndex, stackStartIndex + cardsPerStack).reverse();
+
                     stackWords.forEach((word, index) => {
                         cards.push({
                             text: word,
-                            x: offsetX + col * (cardWidth + spacingX),
-                            y: offsetY + row * (cardHeight + spacingY),
+                            x: startX + col * (cardWidth + spacingX),
+                            y: startY + row * (cardHeight + spacingY),
                             zIndex: index
                         });
                     });
@@ -164,20 +205,24 @@ fetch('woerter.json')
     })
     .catch(err => console.error('Fehler beim Laden der Wörter:', err));
 
+// Reset-Button
 const resetButton = document.getElementById('reset-btn');
 let holdTimeout;
 
-resetButton.addEventListener('mousedown', () => {
+function startReset() {
     resetButton.classList.add('holding');
     holdTimeout = setTimeout(() => location.reload(), 3000);
-});
+}
 
-resetButton.addEventListener('mouseup', () => {
+function cancelReset() {
     clearTimeout(holdTimeout);
     resetButton.classList.remove('holding');
-});
+}
 
-resetButton.addEventListener('mouseleave', () => {
-    clearTimeout(holdTimeout);
-    resetButton.classList.remove('holding');
-});
+resetButton.addEventListener('mousedown', startReset);
+resetButton.addEventListener('mouseup', cancelReset);
+resetButton.addEventListener('mouseleave', cancelReset);
+
+// Touch für Reset
+resetButton.addEventListener('touchstart', startReset);
+resetButton.addEventListener('touchend', cancelReset);
