@@ -1,7 +1,6 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-// Setze Canvas auf die gesamte Fenstergröße
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
@@ -15,18 +14,19 @@ let panY = 0;
 let zoom = 1;
 
 const backgroundImage = new Image();
+backgroundImage.onload = () => drawCards();  // WICHTIG: Erst onload, dann src setzen
+backgroundImage.onerror = () => console.error('Hintergrundbild konnte nicht geladen werden.');
 backgroundImage.src = 'images/background.jpg';
 
 function drawCards() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Leere zuerst das Canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 1. Zeichne das Hintergrundbild **ohne Zoom/Pan**
-    ctx.setTransform(1, 0, 0, 1, 0, 0);  // Reset der Transformation für das Hintergrundbild
+    // Hintergrund ohne Zoom/Pan zeichnen
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
-    // 2. Wende Zoom und Pan nur auf die Karten an
-    ctx.setTransform(zoom, 0, 0, zoom, panX, panY);  // Setze Transformation nur für die Karten
-
+    // Karten mit Zoom und Pan zeichnen
+    ctx.setTransform(zoom, 0, 0, zoom, panX, panY);
     cards.forEach(card => {
         ctx.fillStyle = 'lightblue';
         ctx.fillRect(card.x, card.y, 100, 50);
@@ -142,7 +142,6 @@ fetch('woerter.json')
         const offsetX = (canvas.width - totalWidth) / 2;
         const offsetY = (canvas.height - totalHeight) / 2;
 
-        // Lade die Karten mit Verzögerung, um die Ladezeit zu reduzieren
         setTimeout(() => {
             for (let col = 0; col < columns; col++) {
                 for (let row = 0; row < rows; row++) {
@@ -159,10 +158,8 @@ fetch('woerter.json')
                     });
                 }
             }
-            drawCards(); // Karten nach Verzögerung zeichnen
-        }, 500); // Verzögerung von 500ms, um die Ladezeit zu verbessern
-
-        backgroundImage.onload = () => drawCards();
+            drawCards();
+        }, 500);
     })
     .catch(err => console.error('Fehler beim Laden der Wörter:', err));
 
