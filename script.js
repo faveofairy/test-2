@@ -58,7 +58,7 @@ function getCardAt(x, y) {
     return null;
 }
 
-// --- Maussteuerung
+// Maussteuerung
 canvas.addEventListener('mousedown', (e) => {
     const { x, y } = getTransformedPos(e.clientX, e.clientY);
     const clickedCard = getCardAt(x, y);
@@ -92,7 +92,15 @@ canvas.addEventListener('mouseup', () => {
     draggingCanvas = false;
 });
 
-// --- Touchsteuerung
+// Touchsteuerung mit Pinch-Zoom
+let lastTouchDistance = null;
+
+function getTouchDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
 canvas.addEventListener('touchstart', (e) => {
     if (e.touches.length === 1) {
         const touch = e.touches[0];
@@ -112,14 +120,17 @@ canvas.addEventListener('touchstart', (e) => {
             offsetX = clientX - panX;
             offsetY = clientY - panY;
         }
+    } else if (e.touches.length === 2) {
+        lastTouchDistance = getTouchDistance(e.touches);
     }
 });
 
 canvas.addEventListener('touchmove', (e) => {
     e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+
     if (e.touches.length === 1) {
         const touch = e.touches[0];
-        const rect = canvas.getBoundingClientRect();
         const clientX = touch.clientX - rect.left;
         const clientY = touch.clientY - rect.top;
 
@@ -133,12 +144,30 @@ canvas.addEventListener('touchmove', (e) => {
             panY = clientY - offsetY;
             drawCards();
         }
+    } else if (e.touches.length === 2) {
+        const newDistance = getTouchDistance(e.touches);
+        if (lastTouchDistance) {
+            const zoomFactor = newDistance / lastTouchDistance;
+            const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+            const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+            const { x, y } = getTransformedPos(centerX, centerY);
+
+            const newZoom = zoom * zoomFactor;
+            const dx = x * (newZoom - zoom);
+            const dy = y * (newZoom - zoom);
+            panX -= dx;
+            panY -= dy;
+            zoom = newZoom;
+            drawCards();
+        }
+        lastTouchDistance = newDistance;
     }
 }, { passive: false });
 
 canvas.addEventListener('touchend', () => {
     draggingCard = null;
     draggingCanvas = false;
+    lastTouchDistance = null;
 });
 
 canvas.addEventListener('wheel', (e) => {
@@ -207,22 +236,21 @@ fetch('woerter.json')
 
 // Reset-Button
 const resetButton = document.getElementById('reset-btn');
-let holdTimeout;
+const confirmOverlay = document.getElementById('confirm-overlay');
+const cancelBtn = document.getElementById('cancel-btn');
+const confirmResetBtn = document.getElementById('confirm-reset-btn');
 
-function startReset() {
-    resetButton.classList.add('holding');
-    holdTimeout = setTimeout(() => location.reload(), 3000);
-}
+// Wenn man den Reset-Button klickt, erscheint das Overlay
+resetButton.addEventListener('click', () => {
+    confirmOverlay.style.display = 'flex';
+});
 
-function cancelReset() {
-    clearTimeout(holdTimeout);
-    resetButton.classList.remove('holding');
-}
+// Wenn man auf "Abbrechen" klickt, wird das Overlay geschlossen
+cancelBtn.addEventListener('click', () => {
+    confirmOverlay.style.display = 'none';
+});
 
-resetButton.addEventListener('mousedown', startReset);
-resetButton.addEventListener('mouseup', cancelReset);
-resetButton.addEventListener('mouseleave', cancelReset);
-
-// Touch für Reset
-resetButton.addEventListener('touchstart', startReset);
-resetButton.addEventListener('touchend', cancelReset);
+// Wenn man auf "Ja, zurücksetzen" klickt, wird die Seite neu geladen
+confirmResetBtn.addEventListener('click', () => {
+    location.reload();
+});
