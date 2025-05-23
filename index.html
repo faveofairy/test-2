@@ -43,13 +43,34 @@
       font-size: 24px;
       z-index: 10;
     }
+
+    #info-btn {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent; /* kein Hintergrund */
+  color: white;            /* weißes „i“ */
+  font-weight: bold;
+  font-size: 24px;         /* etwas größer für bessere Sichtbarkeit */
+  cursor: pointer;
+  z-index: 10000;
+  outline: none;           /* kein Fokus-Ring */
+  box-shadow: none;        /* falls Schatten da sind */
+}
+
   </style>
 </head>
 <body>
   <div id="intro-screen">
-    <h1>Was bleibt, wenn man hinsieht?</h1>
-    <p>Ist es nicht genau das was ich meine, das was ich sehen möchte?</p>
-    <p>Die Fragenden, die verschiedenen Blicke einer jeder Person auf dasselbe?</p>
+    <h1>Lege die Worte und beginne zu sehen, was du siehst.</h1>
+    <p>Im Zentrum steht die Frage: Was sehen wir – und wie sehen wir?</p>
+    <p>Zwischen Wahrnehmung, Sprache und Sinn entspinnt sich ein stiller Dialog.</p>
+      <p>Was das Auge liest, wandelt sich durch das Denken. </p>
+      <p>Aus einzelnen Fragmenten formt sich neue Bedeutung – persönlich, vergänglich, offen.</p>
   </div>
 
   <h1>Interaktive Karten</h1>
@@ -59,19 +80,49 @@
 
   <button id="reset-btn" title="Reset">&#x21bb;</button>
 
+  <div id="confirm-overlay" style="display: none;">
+    <div id="confirm-box">
+      <p>Möchtest du wirklich alles zurücksetzen?</p>
+      <button id="cancel-btn">Abbrechen</button>
+      <button id="confirm-reset-btn">Ja, zurücksetzen</button>
+    </div>
+  </div>
+
+<!-- Info-Button -->
+<a href="impressum.html" id="info-btn" title="Impressum & Datenschutz">i</a>
+
+  <!-- SCRIPT ganz unten vor dem schließenden Body-Tag -->
   <script src="script.js"></script>
+
+  <script>
+    window.addEventListener('load', () => {
+  const intro = document.getElementById('intro-screen');
+
+  // Nach 10 Sekunden automatisch ausblenden
+  const timeoutId = setTimeout(() => {
+    fadeOutIntro(intro);
+  }, 10000); // 10.000 ms = 10 Sekunden
+
+  // Klick auf den Intro-Screen blendet ihn sofort aus und löscht timeout
+  intro.addEventListener('click', () => {
+    clearTimeout(timeoutId); // automatische Ausblendung abbrechen
+    fadeOutIntro(intro);
+  });
+
+  function fadeOutIntro(element) {
+    if (!element) return;
+    element.style.transition = 'opacity 1s ease';
+    element.style.opacity = '0';
+    setTimeout(() => element.remove(), 1000);
+  }
+});
+  </script>
+
+<footer>
+  <p>
+    <a href="impressum.html" target="_blank">Impressum & Datenschutz</a>
+  </p>
+</footer>
+
 </body>
 </html>
-
-<script>
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        const intro = document.getElementById('intro-screen');
-        if (intro) {
-          intro.style.transition = 'opacity 1s ease';
-          intro.style.opacity = '0';
-          setTimeout(() => intro.remove(), 1000); // Entfernt das Element nach dem Ausblenden
-        }
-      }, 1000); // 1000 Millisekunden = 1 Sekunde
-    });
-  </script>
