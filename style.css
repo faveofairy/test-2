@@ -32,7 +32,7 @@
     right: 20px;
     width: 40px;
     height: 40px;
-    border: 2px solid white;
+    border: none;
     border-radius: 50%;
     background: transparent;
     color: white;
@@ -103,9 +103,9 @@
   position: absolute;
   bottom: 20px;
   left: 20px;
-  font-size: 28px;
+  font-size: 18px;
   text-decoration: none;
-  color: white; /* <- wichtig: weiß statt schwarz, sonst unsichtbar auf dunklem Hintergrund */
+  color:  rgb(93, 93, 93); /* <- wichtig: weiß statt schwarz, sonst unsichtbar auf dunklem Hintergrund */
   background: none;
   border: none;
   cursor: pointer;
