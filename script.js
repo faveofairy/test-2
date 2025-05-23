@@ -23,7 +23,7 @@ function drawCards() {
     ctx.setTransform(zoom, 0, 0, zoom, panX, panY);
 
     cards.forEach(card => {
-        ctx.fillStyle = 'lightblue';
+        ctx.fillStyle = 'white';
         ctx.fillRect(card.x, card.y, 100, 50);
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
