@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Impressum</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; background: #f9f9f9; color: #333; }
+  </style>
+</head>
+<body>
+  <h1>Impressum</h1>
+  <p>Felicitas Klute<br />
+  Ludwig Windthorst Str.14<br />
+  75180 Pforzheim<br />
+  E-Mail: <a href="mailto:felicitas.klute@stud.kunstakademie-karlsruhe.de">felicitas.klute@stud.kunstakademie-karlsruhe.de</a></p>
+  <p>Diese Webanwendung wird über GitHub Pages bereitgestellt.<br />
+Es werden keine personenbezogenen Daten durch mich gespeichert oder verarbeitet.<br />
+Beim Aufruf der Seite kann GitHub als Hosting-Anbieter automatisch technische Informationen (z. B. IP-Adresse) erfassen.<br />
+Diese Daten werden nicht von mir ausgewertet oder weiterverarbeitet.</p>
+
+<script>
+  document.getElementById('close-impressum').addEventListener('click', () => {
+    window.history.back(); // Geht zur vorherigen Seite zurück
+  });
+</script>
+
+<button id="close-impressum" onclick="window.history.back()">Schließen</button>
+
+</body>
+</html>
